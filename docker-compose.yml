@@ -1,0 +1,41 @@
+version: '2.7'
+
+services:
+  db:
+    image: mysql:5.7
+    volumes:
+      - ${MYSQL_DATADIR}:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+
+  wordpress:
+    image: wordpress:latest
+    depends_on:
+      - db
+    ports:
+      - ${WORDPRESS_PORT}:80
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: ${MYSQL_USER}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ${WORDPRESS_PLUGINS}:/var/www/html/wp-content/plugins
+      - ${WORDPRESS_THEMES}:/var/www/html/wp-content/themes
+      - ${WORDPRESS_UPLOADS}:/var/www/html/wp-content/uploads
+  pma:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      # https://docs.phpmyadmin.net/en/latest/setup.html#docker-environment-variables
+      PMA_HOST: db
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - ${PHPMYADMIN_PORT}:80
+    links:
+      - db:db
+ 
